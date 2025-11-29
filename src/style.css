@@ -1,0 +1,31 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Fonts */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Brand palette (HEX) */
+  --color-brand-primary: #38bdf8; /* sky-400-ish */
+  --color-brand-primary-dark: #0284c7; /* sky-600-ish */
+  --color-brand-accent: #a855f7; /* purple-500 */
+  --color-surface-900: #020617; /* slate-950-ish */
+  --color-surface-800: #0f172a;
+
+  /* Border radius tokens */
+  --radius-card: 1rem;
+  --radius-pill: 9999px;
+}
+
+/* Global layout */
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--color-surface-900);
+  color: white;
+}
