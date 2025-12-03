@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 export const http = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://test.kkcbot',
+  baseURL: import.meta.env.DEV 
+  ? '' // Use Vite proxy in development
+  : (import.meta.env.VITE_API_BASE_URL || 'https://mini.sirch01.com'),
   headers: {
     'Content-Type': 'application/json',
   },

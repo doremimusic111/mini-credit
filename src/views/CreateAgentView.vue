@@ -142,7 +142,6 @@ function onIframeError() {
 }
 
 async function init() {
-  console.log({user: user.value})
   loading.value = true;
   error.value = null;
 

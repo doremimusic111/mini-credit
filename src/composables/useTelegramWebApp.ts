@@ -216,8 +216,6 @@ export function useTelegramWebApp() {
     } as TelegramWebApp;
     initData.value = getMockInitData();
     user.value = mockUser;
-
-    console.log({user: user.value, initData: initData.value});
   }
 
   onMounted(() => {
