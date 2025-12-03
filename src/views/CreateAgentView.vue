@@ -5,7 +5,12 @@
   >
     <header class="mb-3 flex items-center justify-between">
       <div class="flex-1">
-        <h1 class="text-lg font-semibold">创建代理</h1>
+        <div class="flex items-center gap-2">
+          <h1 class="text-lg font-semibold">创建代理</h1>
+          <span class="px-2 py-0.5 text-[10px] rounded-full bg-brand-primary/20 text-brand-primary border border-brand-primary/30">
+            v1.0.1
+          </span>
+        </div>
         <p class="text-xs text-slate-400">
           Telegram 用户：<span v-if="username">@{{ username }}</span>
           <span v-else class="italic">检测中…</span>
