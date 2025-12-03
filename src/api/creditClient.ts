@@ -9,10 +9,10 @@ export interface TokenResponse {
 }
 
 export async function fetchMiniCreditToken(
-  account: string,
+  username: string,
 ): Promise<TokenResponse> {
   const response = await http.post<TokenResponse>('/api/mini/credit/login', {
-    account,
+    username,
   });
 
   return response.data;

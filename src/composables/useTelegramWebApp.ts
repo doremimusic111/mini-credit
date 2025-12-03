@@ -136,7 +136,7 @@ function getMockUser(): TelegramWebAppUser {
     id: Number(import.meta.env.VITE_MOCK_USER_ID) || 6884869563,
     first_name: import.meta.env.VITE_MOCK_FIRST_NAME || 'Test',
     last_name: import.meta.env.VITE_MOCK_LAST_NAME || 'User',
-    username: import.meta.env.VITE_MOCK_USERNAME || 'testuser',
+    username: import.meta.env.VITE_MOCK_USERNAME || 'tgbot1',
     language_code: 'en',
   };
 }

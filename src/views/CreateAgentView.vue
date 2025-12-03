@@ -146,13 +146,22 @@ async function init() {
   loading.value = true;
   error.value = null;
 
+  // Validate user data
+  if (!user.value?.id || !initData.value) {
+    error.value = 'Telegram WebApp user/initData not available';
+    loading.value = false;
+    return;
+  }
+
+  // Check if username is available
+  if (!user.value.username) {
+    error.value = 'Telegram 用户名不可用，请确保您的 Telegram 账户已设置用户名';
+    loading.value = false;
+    return;
+  }
+
   try {
-    if (!user.value?.id || !initData.value) {
-      throw new Error('Telegram WebApp user/initData not available');
-    }
-
-    const res = await fetchMiniCreditToken(user.value.id.toString());
-
+    const res = await fetchMiniCreditToken(user.value.username);
     token.value = res.data.token;
   } catch (e: any) {
     console.error(e);
