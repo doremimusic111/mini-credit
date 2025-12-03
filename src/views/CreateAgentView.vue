@@ -146,9 +146,7 @@ async function init() {
       throw new Error('Telegram WebApp user/initData not available');
     }
 
-    const res = await fetchMiniCreditToken({
-      account: user.value.id,
-    });
+    const res = await fetchMiniCreditToken(user.value.id.toString());
 
     token.value = res.data.token;
   } catch (e: any) {
