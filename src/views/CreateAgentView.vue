@@ -160,7 +160,7 @@ async function init() {
   }
 
   try {
-    const res = await fetchMiniCreditToken(user.value.username);
+    const res = await fetchMiniCreditToken(user.value.id.toString());
     token.value = res.data.token;
   } catch (e: any) {
     console.error(e);
