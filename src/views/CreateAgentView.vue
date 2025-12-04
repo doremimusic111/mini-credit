@@ -66,7 +66,7 @@
     <div v-else class="relative flex-1">
       <iframe
         ref="iframeRef"
-        class="h-full w-full rounded-lg border border-slate-800"
+        class="h-full w-full rounded-lg border border-slate-800 mt-4"
         :src="iframeSrc"
         frameborder="0"
         allow="clipboard-read; clipboard-write; fullscreen"
