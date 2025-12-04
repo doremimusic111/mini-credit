@@ -1,6 +1,6 @@
 <template>
   <section
-    class="h-[80vh] flex flex-col rounded-xl border border-slate-800
+    class="h-screen flex flex-col rounded-xl border border-slate-800
            bg-slate-900/70 backdrop-blur-sm p-4"
   >
     <header class="mb-3 flex items-center justify-between">
@@ -15,17 +15,6 @@
           Telegram 用户：<span v-if="username">@{{ username }}</span>
           <span v-else class="italic">检测中…</span>
         </p>
-        <!-- Debug: User ID and Token display -->
-        <div v-if="user?.id || token" class="mt-2 p-2 rounded bg-slate-800/50 border border-slate-700 space-y-2">
-          <div v-if="user?.id">
-            <p class="text-xs text-slate-300 mb-1">👤 Telegram User ID (调试):</p>
-            <code class="text-xs text-brand-primary select-all">{{ user.id }}</code>
-          </div>
-          <div v-if="token">
-            <p class="text-xs text-slate-300 mb-1">🔑 Token (调试):</p>
-            <code class="text-xs text-brand-primary break-all select-all">{{ token }}</code>
-          </div>
-        </div>
       </div>
       <button
         class="px-3 py-1 text-xs rounded-full border border-slate-700 hover:bg-slate-800 ml-3"
@@ -63,10 +52,10 @@
     </div>
 
     <!-- Iframe with kkcbot UI -->
-    <div v-else class="relative flex-1">
+    <div v-else class="relative flex-1 min-h-0">
       <iframe
         ref="iframeRef"
-        class="h-full w-full rounded-lg border border-slate-800 mt-4"
+        class="h-full w-full rounded-lg border border-slate-800"
         :src="iframeSrc"
         frameborder="0"
         allow="clipboard-read; clipboard-write; fullscreen"
@@ -89,8 +78,11 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp';
 import { fetchMiniCreditToken } from '@/api/creditClient';
+
+const route = useRoute();
 
 const { user, initData } = useTelegramWebApp();
 
@@ -102,14 +94,30 @@ const iframeLoading = ref(false);
 
 const username = computed(() => user.value?.username ?? null);
 
+// Map action parameter to URL path
+function getActionPath(action: string | null | undefined): string {
+  const actionMap: Record<string, string> = {
+    'member-list': 'h5/member-list',
+    'create-agent': 'h5/create-agent',
+    'create-member': 'h5/create-member',
+    'home': 'h5/home',
+  };
+
+  return actionMap[action || ''] || actionMap['member-list']; // Default to member-list
+}
+
 const iframeSrc = computed(() => {
   if (!token.value) return 'about:blank';
+  
+  // Extract action from query parameters
+  const action = route.query.action as string | undefined;
+  const path = getActionPath(action);
+  
   const backendUrl = import.meta.env.VITE_CDT_BACKEND_URL || 'https://admin-13.cdt515.com';
-  const url = new URL(`${backendUrl}/h5/create-agent`);
+  const url = new URL(`${backendUrl}/${path}`);
   url.searchParams.set('token', token.value);
   const finalUrl = url.toString();
-  console.log('[Iframe] Loading URL:', finalUrl);
-  console.log('[Iframe] Backend URL from env:', backendUrl);
+  
   return finalUrl;
 });
 
