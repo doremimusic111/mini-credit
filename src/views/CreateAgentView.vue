@@ -3,10 +3,10 @@
     class="h-screen flex flex-col rounded-xl border border-slate-800
            bg-slate-900/70 backdrop-blur-sm p-4"
   >
-    <header class="mb-3 flex items-center justify-between">
+    <header v-if="isDevelopment" class="mb-3 flex items-center justify-between">
       <div class="flex-1">
         <div class="flex items-center gap-2">
-          <h1 class="text-lg font-semibold">创建代理</h1>
+          <h1 class="text-lg font-semibold">{{ pageTitle }}</h1>
           <span class="px-2 py-0.5 text-[10px] rounded-full bg-brand-primary/20 text-brand-primary border border-brand-primary/30">
             v1.0.1
           </span>
@@ -93,6 +93,7 @@ const iframeRef = ref<HTMLIFrameElement | null>(null);
 const iframeLoading = ref(false);
 
 const username = computed(() => user.value?.username ?? null);
+const isDevelopment = computed(() => import.meta.env.DEV);
 
 // Map action parameter to URL path
 function getActionPath(action: string | null | undefined): string {
@@ -105,6 +106,23 @@ function getActionPath(action: string | null | undefined): string {
 
   return actionMap[action || ''] || actionMap['member-list']; // Default to member-list
 }
+
+// Map action parameter to page title
+function getPageTitle(action: string | null | undefined): string {
+  const titleMap: Record<string, string> = {
+    'member-list': '下级列表',
+    'create-agent': '新增代理',
+    'create-member': '新增会员',
+    'home': '信用系统',
+  };
+
+  return titleMap[action || ''] || titleMap['member-list']; // Default to member-list
+}
+
+const pageTitle = computed(() => {
+  const action = route.query.action as string | undefined;
+  return getPageTitle(action);
+});
 
 const iframeSrc = computed(() => {
   if (!token.value) return 'about:blank';
