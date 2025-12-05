@@ -103,10 +103,11 @@ const isDevelopment = computed(() => import.meta.env.DEV);
 // Map action parameter to URL path
 function getActionPath(action: string | null | undefined): string {
   const actionMap: Record<string, string> = {
-    'member-list': 'h5/member-list',
+    'agent-list': 'h5/agent-list',
     'create-agent': 'h5/create-agent',
     'create-member': 'h5/create-member',
     'home': 'h5/home',
+    'member-list': 'h5/member-list',
   };
 
   return actionMap[action || ''] || actionMap['member-list']; // Default to member-list
@@ -115,10 +116,11 @@ function getActionPath(action: string | null | undefined): string {
 // Map action parameter to page title
 function getPageTitle(action: string | null | undefined): string {
   const titleMap: Record<string, string> = {
-    'member-list': '下级列表',
+    'agent-list': '修改配置',
     'create-agent': '新增代理',
     'create-member': '新增会员',
     'home': '信用系统',
+    'member-list': '下级列表',
   };
 
   return titleMap[action || ''] || titleMap['member-list']; // Default to member-list
