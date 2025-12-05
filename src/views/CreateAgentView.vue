@@ -35,6 +35,9 @@
       </div>
     </div>
 
+    <!-- 404 - User not found -->
+    <NotFoundView v-else-if="isNotFound" />
+
     <!-- Error state -->
     <div
       v-else-if="error"
@@ -81,6 +84,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useTelegramWebApp } from '@/composables/useTelegramWebApp';
 import { fetchMiniCreditToken } from '@/api/creditClient';
+import NotFoundView from '@/components/NotFoundView.vue';
 
 const route = useRoute();
 
@@ -91,6 +95,7 @@ const error = ref<string | null>(null);
 const token = ref<string | null>(null);
 const iframeRef = ref<HTMLIFrameElement | null>(null);
 const iframeLoading = ref(false);
+const isNotFound = ref(false);
 
 const username = computed(() => user.value?.username ?? null);
 const isDevelopment = computed(() => import.meta.env.DEV);
@@ -170,6 +175,7 @@ function onIframeError() {
 async function init() {
   loading.value = true;
   error.value = null;
+  isNotFound.value = false;
 
   // Validate user data
   if (!user.value?.id || !initData.value) {
@@ -187,9 +193,23 @@ async function init() {
 
   try {
     const res = await fetchMiniCreditToken(user.value.id.toString());
+    
+    // Check if user not found (404)
+    if (res.code === 404) {
+      isNotFound.value = true;
+      return;
+    }
+    
     token.value = res.data.token;
   } catch (e: any) {
     console.error(e);
+    
+    // Check if it's a 404 response in the error
+    if (e?.response?.data?.code === 404 || e?.response?.status === 404) {
+      isNotFound.value = true;
+      return;
+    }
+    
     error.value = e?.message ?? 'Unexpected error';
   } finally {
     loading.value = false;

@@ -133,10 +133,10 @@ declare global {
 // Mock data for local development (from .env or defaults)
 function getMockUser(): TelegramWebAppUser {
   return {
-    id: Number(import.meta.env.VITE_MOCK_USER_ID) || 6884869563,
-    first_name: import.meta.env.VITE_MOCK_FIRST_NAME || 'Test',
-    last_name: import.meta.env.VITE_MOCK_LAST_NAME || 'User',
-    username: import.meta.env.VITE_MOCK_USERNAME || 'tgbot1',
+    id: Number(import.meta.env.VITE_MOCK_USER_ID),
+    first_name: import.meta.env.VITE_MOCK_FIRST_NAME,
+    last_name: import.meta.env.VITE_MOCK_LAST_NAME,
+    username: import.meta.env.VITE_MOCK_USERNAME,
     language_code: 'en',
   };
 }
