@@ -1,4 +1,4 @@
-import { http } from './http';
+import { API_BASE_URL, http } from './http';
 
 export interface TokenResponse {
   code: number;
@@ -11,9 +11,12 @@ export interface TokenResponse {
 export async function fetchMiniCreditToken(
   telegramUserId: string,
 ): Promise<TokenResponse> {
-  const response = await http.post<TokenResponse>('/api/mini/credit/login', {
-    telegram_user_id: telegramUserId,
-  });
+  const response = await http.post<TokenResponse>(
+    `${API_BASE_URL}/api/mini/credit/login`,
+    {
+      telegram_user_id: telegramUserId,
+    },
+  );
 
   return response.data;
 }
