@@ -1,23 +1,25 @@
 <template>
   <section
-    class="h-screen flex flex-col rounded-xl border border-slate-800
-           bg-slate-900/70 backdrop-blur-sm p-4"
+    class="flex h-screen flex-col rounded-xl border border-slate-800 bg-slate-900/70 p-4 backdrop-blur-sm"
   >
     <header v-if="isDevelopment" class="mb-3 flex items-center justify-between">
       <div class="flex-1">
         <div class="flex items-center gap-2">
           <h1 class="text-lg font-semibold">{{ pageTitle }}</h1>
-          <span class="px-2 py-0.5 text-[10px] rounded-full bg-brand-primary/20 text-brand-primary border border-brand-primary/30">
+          <span
+            class="bg-brand-primary/20 text-brand-primary border-brand-primary/30 rounded-full border px-2 py-0.5 text-[10px]"
+          >
             v1.0.1
           </span>
         </div>
         <p class="text-xs text-slate-400">
-          Telegram 用户：<span v-if="username">@{{ username }}</span>
+          Telegram 用户：
+          <span v-if="username">@{{ username }}</span>
           <span v-else class="italic">检测中…</span>
         </p>
       </div>
       <button
-        class="px-3 py-1 text-xs rounded-full border border-slate-700 hover:bg-slate-800 ml-3"
+        class="ml-3 rounded-full border border-slate-700 px-3 py-1 text-xs hover:bg-slate-800"
         @click="init"
       >
         重新连接
@@ -25,12 +27,11 @@
     </header>
 
     <!-- Loading state -->
-    <div
-      v-if="loading"
-      class="flex-1 grid place-items-center text-xs text-slate-400"
-    >
+    <div v-if="loading" class="grid flex-1 place-items-center text-xs text-slate-400">
       <div class="flex flex-col items-center gap-2">
-        <span class="h-7 w-7 border-2 border-slate-600 border-t-brand-primary rounded-full animate-spin" />
+        <span
+          class="border-t-brand-primary h-7 w-7 animate-spin rounded-full border-2 border-slate-600"
+        />
         <span>正在连接到 kkcbot…</span>
       </div>
     </div>
@@ -39,14 +40,11 @@
     <NotFoundView v-else-if="isNotFound" />
 
     <!-- Error state -->
-    <div
-      v-else-if="error"
-      class="flex-1 grid place-items-center text-xs text-red-400"
-    >
+    <div v-else-if="error" class="grid flex-1 place-items-center text-xs text-red-400">
       <div class="flex flex-col items-center gap-2">
         <span>⚠ {{ error }}</span>
         <button
-          class="px-3 py-1 rounded-full bg-brand-primary hover:bg-brand-primary-dark text-xs"
+          class="bg-brand-primary hover:bg-brand-primary-dark rounded-full px-3 py-1 text-xs"
           @click="init"
         >
           重试
@@ -55,7 +53,7 @@
     </div>
 
     <!-- Iframe with kkcbot UI -->
-    <div v-else class="relative flex-1 min-h-0">
+    <div v-else class="relative min-h-0 flex-1">
       <iframe
         ref="iframeRef"
         class="h-full w-full rounded-lg border border-slate-800"
@@ -68,10 +66,12 @@
       <!-- Loading overlay for iframe -->
       <div
         v-if="iframeLoading"
-        class="absolute inset-0 grid place-items-center bg-slate-900/80 backdrop-blur-sm rounded-lg"
+        class="absolute inset-0 grid place-items-center rounded-lg bg-slate-900/80 backdrop-blur-sm"
       >
         <div class="flex flex-col items-center gap-2 text-xs text-slate-400">
-          <span class="h-7 w-7 border-2 border-slate-600 border-t-brand-primary rounded-full animate-spin" />
+          <span
+            class="border-t-brand-primary h-7 w-7 animate-spin rounded-full border-2 border-slate-600"
+          />
           <span>正在加载页面…</span>
         </div>
       </div>
@@ -106,7 +106,7 @@ function getActionPath(action: string | null | undefined): string {
     'agent-list': 'h5/agent-list',
     'create-agent': 'h5/create-agent',
     'create-member': 'h5/create-member',
-    'home': 'h5/home',
+    home: 'h5/home',
     'member-list': 'h5/member-list',
   };
 
@@ -119,7 +119,7 @@ function getPageTitle(action: string | null | undefined): string {
     'agent-list': '修改配置',
     'create-agent': '新增代理',
     'create-member': '新增会员',
-    'home': '信用系统',
+    home: '信用系统',
     'member-list': '下级列表',
   };
 
@@ -133,16 +133,16 @@ const pageTitle = computed(() => {
 
 const iframeSrc = computed(() => {
   if (!token.value) return 'about:blank';
-  
+
   // Extract action from query parameters
   const action = route.query.action as string | undefined;
   const path = getActionPath(action);
-  
+
   const backendUrl = import.meta.env.VITE_CDT_BACKEND_URL || 'https://admin-13.cdt515.com';
   const url = new URL(`${backendUrl}/${path}`);
   url.searchParams.set('token', token.value);
   const finalUrl = url.toString();
-  
+
   return finalUrl;
 });
 
@@ -195,23 +195,22 @@ async function init() {
 
   try {
     const res = await fetchMiniCreditToken(user.value.id.toString());
-    
     // Check if user not found (404)
     if (res.code === 404) {
       isNotFound.value = true;
       return;
     }
-    
+
     token.value = res.data.token;
   } catch (e: any) {
     console.error(e);
-    
+
     // Check if it's a 404 response in the error
     if (e?.response?.data?.code === 404 || e?.response?.status === 404) {
       isNotFound.value = true;
       return;
     }
-    
+
     error.value = e?.message ?? 'Unexpected error';
   } finally {
     loading.value = false;
