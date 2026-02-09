@@ -93,6 +93,7 @@ const { user, initData } = useTelegramWebApp();
 const loading = ref(true);
 const error = ref<string | null>(null);
 const token = ref<string | null>(null);
+const url = ref<string | null>(null);
 const iframeRef = ref<HTMLIFrameElement | null>(null);
 const iframeLoading = ref(false);
 const isNotFound = ref(false);
@@ -138,12 +139,12 @@ const iframeSrc = computed(() => {
   const action = route.query.action as string | undefined;
   const path = getActionPath(action);
 
-  const backendUrl = import.meta.env.VITE_CDT_BACKEND_URL || 'https://admin-13.cdt515.com';
-  const url = new URL(`${backendUrl}/${path}`);
-  url.searchParams.set('token', token.value);
-  const finalUrl = url.toString();
+  const backendUrl =
+    url.value ?? (import.meta.env.VITE_CDT_BACKEND_URL || 'https://admin-13.cdt515.com');
+  const frontendUrl = new URL(`${backendUrl}/${path}`);
+  frontendUrl.searchParams.set('token', token.value);
 
-  return finalUrl;
+  return frontendUrl.toString();
 });
 
 // Watch for token changes to show loading spinner
@@ -202,6 +203,7 @@ async function init() {
     }
 
     token.value = res.data.token;
+    url.value = res.data.url;
   } catch (e: any) {
     console.error(e);
 
