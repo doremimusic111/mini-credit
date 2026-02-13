@@ -9,9 +9,13 @@ export interface TokenResponse {
   };
 }
 
-export async function fetchMiniCreditToken(telegramUserId: string): Promise<TokenResponse> {
+export async function fetchMiniCreditToken(
+  telegramUserId: string,
+  initData: string
+): Promise<TokenResponse> {
   const response = await http.post<TokenResponse>(`${API_BASE_URL}/api/mini/credit/login`, {
     telegram_user_id: telegramUserId,
+    init_data: initData,
   });
 
   return response.data;

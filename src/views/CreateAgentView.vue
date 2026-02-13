@@ -133,14 +133,13 @@ const pageTitle = computed(() => {
 });
 
 const iframeSrc = computed(() => {
-  if (!token.value) return 'about:blank';
+  if (!token.value || !url.value) return 'about:blank';
 
   // Extract action from query parameters
   const action = route.query.action as string | undefined;
   const path = getActionPath(action);
 
-  const backendUrl =
-    url.value ?? (import.meta.env.VITE_CDT_BACKEND_URL || 'https://admin-13.cdt515.com');
+  const backendUrl = url.value!;
   const frontendUrl = new URL(`${backendUrl}/${path}`);
   frontendUrl.searchParams.set('token', token.value);
 
@@ -195,7 +194,7 @@ async function init() {
   }
 
   try {
-    const res = await fetchMiniCreditToken(user.value.id.toString());
+    const res = await fetchMiniCreditToken(user.value.id.toString(), initData.value);
     // Check if user not found (404)
     if (res.code === 404) {
       isNotFound.value = true;
