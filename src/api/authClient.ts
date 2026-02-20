@@ -1,8 +1,9 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.DEV
-  ? ''
-  : (import.meta.env.VITE_API_BASE_URL || 'https://api.sirch01.com');
+// Empty VITE_API_BASE_URL = same-origin (use with Vercel proxy to avoid CORS)
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ??
+  (import.meta.env.DEV ? '' : 'https://api.sirch01.com');
 
 export interface AuthResponse {
   message: string;
@@ -55,7 +56,7 @@ export function getAuthErrorMessage(e: unknown): string {
 export async function fetchSanctumToken(
   payload: AuthRequest
 ): Promise<AuthResponse> {
-  const base = import.meta.env.DEV ? '' : (API_BASE_URL || 'https://api.sirch01.com');
+  const base = API_BASE_URL;
   const { data } = await axios.post<AuthResponse>(
     `${base}/api/mini/auth`,
     payload,
