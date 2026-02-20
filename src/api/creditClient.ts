@@ -1,6 +1,10 @@
-import { API_BASE_URL, http } from './http';
+import axios from 'axios';
 
-export interface TokenResponse {
+const API_BASE_URL = import.meta.env.DEV
+  ? ''
+  : (import.meta.env.VITE_API_BASE_URL || 'https://api.sirch01.com');
+
+export interface SessionResponse {
   code: number;
   message: string;
   data: {
@@ -9,14 +13,25 @@ export interface TokenResponse {
   };
 }
 
-export async function fetchMiniCreditToken(
-  telegramUserId: string,
-  initData: string
-): Promise<TokenResponse> {
-  const response = await http.post<TokenResponse>(`${API_BASE_URL}/api/mini/credit/session`, {
-    telegram_user_id: telegramUserId,
-    init_data: initData,
-  });
-
-  return response.data;
+/**
+ * Step 2: Get Credit Agent session (token + backend URL).
+ * Requires Sanctum token from POST /api/auth first.
+ * POST /api/mini/credit/session
+ */
+export async function fetchCreditSession(
+  sanctumToken: string
+): Promise<SessionResponse> {
+  const base = import.meta.env.DEV ? '' : (API_BASE_URL || 'https://api.sirch01.com');
+  const { data } = await axios.post<SessionResponse>(
+    `${base}/api/mini/credit/session`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${sanctumToken}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    }
+  );
+  return data;
 }

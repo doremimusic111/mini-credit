@@ -13,8 +13,8 @@
           </span>
         </div>
         <p class="text-xs text-slate-400">
-          Telegram 用户：
-          <span v-if="username">@{{ username }}</span>
+          {{ platformLabel }}：
+          <span v-if="displayName">{{ displayName }}</span>
           <span v-else class="italic">检测中…</span>
         </p>
       </div>
@@ -32,7 +32,7 @@
         <span
           class="border-t-brand-primary h-7 w-7 animate-spin rounded-full border-2 border-slate-600"
         />
-        <span>正在连接到 kkcbot…</span>
+        <span>{{ loadingText }}</span>
       </div>
     </div>
 
@@ -82,13 +82,21 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { useTelegramWebApp } from '@/composables/useTelegramWebApp';
-import { fetchMiniCreditToken } from '@/api/creditClient';
+import { usePlatformAuth } from '@/composables/usePlatformAuth';
+import { fetchCreditSession } from '@/api/creditClient';
 import NotFoundView from '@/components/NotFoundView.vue';
 
 const route = useRoute();
 
-const { user, initData } = useTelegramWebApp();
+const {
+  platform,
+  displayName,
+  isReady,
+  hasError,
+  authError,
+  fetchToken,
+  telegramUser,
+} = usePlatformAuth();
 
 const loading = ref(true);
 const error = ref<string | null>(null);
@@ -98,7 +106,12 @@ const iframeRef = ref<HTMLIFrameElement | null>(null);
 const iframeLoading = ref(false);
 const isNotFound = ref(false);
 
-const username = computed(() => user.value?.username ?? null);
+const platformLabel = computed(() =>
+  platform.value === 'line' ? 'Line 用户' : 'Telegram 用户'
+);
+const loadingText = computed(() =>
+  platform.value ? '正在连接到 kkcbot…' : '正在检测平台…'
+);
 const isDevelopment = computed(() => import.meta.env.DEV);
 
 // Map action parameter to URL path
@@ -110,11 +123,9 @@ function getActionPath(action: string | null | undefined): string {
     home: 'h5/home',
     'member-list': 'h5/member-list',
   };
-
-  return actionMap[action || ''] || actionMap['member-list']; // Default to member-list
+  return actionMap[action || ''] || actionMap['member-list'];
 }
 
-// Map action parameter to page title
 function getPageTitle(action: string | null | undefined): string {
   const titleMap: Record<string, string> = {
     'agent-list': '修改配置',
@@ -123,53 +134,29 @@ function getPageTitle(action: string | null | undefined): string {
     home: '信用系统',
     'member-list': '下级列表',
   };
-
-  return titleMap[action || ''] || titleMap['member-list']; // Default to member-list
+  return titleMap[action || ''] || titleMap['member-list'];
 }
 
-const pageTitle = computed(() => {
-  const action = route.query.action as string | undefined;
-  return getPageTitle(action);
-});
+const pageTitle = computed(() => getPageTitle(route.query.action as string | undefined));
 
 const iframeSrc = computed(() => {
   if (!token.value || !url.value) return 'about:blank';
-
-  // Extract action from query parameters
   const action = route.query.action as string | undefined;
   const path = getActionPath(action);
-
-  const backendUrl = url.value!;
-  const frontendUrl = new URL(`${backendUrl}/${path}`);
+  const frontendUrl = new URL(`${url.value!}/${path}`);
   frontendUrl.searchParams.set('token', token.value);
-
   return frontendUrl.toString();
 });
 
-// Watch for token changes to show loading spinner
 watch(token, (newToken) => {
-  if (newToken) {
-    iframeLoading.value = true;
-  }
+  if (newToken) iframeLoading.value = true;
 });
 
 function onIframeLoad() {
-  console.log('[Iframe] Loaded successfully');
   iframeLoading.value = false;
-  if (iframeRef.value) {
-    try {
-      // Try to access iframe content (may fail due to CORS)
-      const iframeUrl = iframeRef.value.contentWindow?.location.href;
-      console.log('[Iframe] Current iframe URL:', iframeUrl);
-    } catch (e) {
-      // Expected if CORS prevents access
-      console.log('[Iframe] Cannot access iframe content (CORS), but iframe loaded');
-    }
-  }
 }
 
 function onIframeError() {
-  console.error('[Iframe] Failed to load iframe');
   iframeLoading.value = false;
   error.value = '无法加载页面，请检查网络连接';
 }
@@ -179,23 +166,28 @@ async function init() {
   error.value = null;
   isNotFound.value = false;
 
-  // Validate user data
-  if (!user.value?.id || !initData.value) {
-    error.value = 'Telegram WebApp user/initData not available';
+  // Wait for platform to be ready (Telegram or Line)
+  if (!isReady.value) {
+    error.value = authError.value || '请从 Telegram 或 Line 打开此应用';
     loading.value = false;
     return;
   }
 
-  // Check if username is available
-  if (!user.value.username) {
+  // Telegram-specific: require username
+  if (platform.value === 'telegram' && !telegramUser.value?.username) {
     error.value = 'Telegram 用户名不可用，请确保您的 Telegram 账户已设置用户名';
     loading.value = false;
     return;
   }
 
   try {
-    const res = await fetchMiniCreditToken(user.value.id.toString(), initData.value);
-    // Check if user not found (404)
+    const sanctumToken = await fetchToken();
+    if (!sanctumToken) {
+      error.value = authError.value || '认证失败';
+      return;
+    }
+
+    const res = await fetchCreditSession(sanctumToken);
     if (res.code === 404) {
       isNotFound.value = true;
       return;
@@ -203,20 +195,29 @@ async function init() {
 
     token.value = res.data.token;
     url.value = res.data.url;
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error(e);
-
-    // Check if it's a 404 response in the error
-    if (e?.response?.data?.code === 404 || e?.response?.status === 404) {
+    const err = e as { response?: { data?: { code?: number }; status?: number }; message?: string };
+    if (err?.response?.data?.code === 404 || err?.response?.status === 404) {
       isNotFound.value = true;
       return;
     }
-
-    error.value = e?.message ?? 'Unexpected error';
+    error.value = err?.message ?? 'Unexpected error';
   } finally {
     loading.value = false;
   }
 }
 
-onMounted(init);
+// Run init when platform becomes ready
+watch(
+  isReady,
+  (ready) => {
+    if (ready) init();
+  },
+  { immediate: true }
+);
+
+onMounted(() => {
+  if (hasError.value) error.value = authError.value ?? null;
+});
 </script>
