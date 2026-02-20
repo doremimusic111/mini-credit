@@ -1,9 +1,10 @@
 import { computed, ref, watch } from 'vue';
 import { useTelegramWebApp } from './useTelegramWebApp';
 import { useLineLiff } from './useLineLiff';
-import { fetchSanctumToken, type AuthRequest } from '@/api/authClient';
+import { fetchSanctumToken, getAuthErrorMessage, type AuthRequest } from '@/api/authClient';
 
-const CREDIT_BOT_ID = '7785400153';
+/** Bot ID for the Telegram Mini App. Must match the bot that serves the web app. */
+const CREDIT_BOT_ID = import.meta.env.VITE_TELEGRAM_BOT_ID || '8471147380';
 
 export type Platform = 'telegram' | 'line' | null;
 
@@ -75,8 +76,9 @@ export function usePlatformAuth() {
       sanctumToken.value = res.token;
       return res.token;
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
+      const msg = getAuthErrorMessage(e);
       authError.value = msg;
+      if (import.meta.env.DEV) console.error('[Auth] API error:', e);
       return null;
     }
   }

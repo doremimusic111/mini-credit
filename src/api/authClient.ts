@@ -32,6 +32,26 @@ export type AuthRequest = TelegramAuthRequest | LineAuthRequest;
  * Step 1: Authenticate via Mini App (Telegram or Line) to obtain Sanctum token.
  * POST /api/mini/auth
  */
+/**
+ * Extract a user-friendly error message from an Axios error.
+ */
+export function getAuthErrorMessage(e: unknown): string {
+  if (e && typeof e === 'object' && 'response' in e) {
+    const res = (e as { response?: { data?: unknown; status?: number } }).response;
+    if (res?.data && typeof res.data === 'object') {
+      const data = res.data as Record<string, unknown>;
+      if (typeof data.message === 'string') return data.message;
+      if (typeof data.error === 'string') return data.error;
+      if (Array.isArray(data.errors)) {
+        const first = data.errors[0];
+        return typeof first === 'string' ? first : String(first);
+      }
+    }
+    if (res?.status) return `Request failed (${res.status})`;
+  }
+  return e instanceof Error ? e.message : String(e);
+}
+
 export async function fetchSanctumToken(
   payload: AuthRequest
 ): Promise<AuthResponse> {
