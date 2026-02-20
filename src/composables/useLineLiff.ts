@@ -26,7 +26,7 @@ declare global {
   }
 }
 
-const LIFF_ID = import.meta.env.VITE_LIFF_ID_CREDIT || '2009179302-lcIOdnXu';
+const LIFF_ID = import.meta.env.VITE_LIFF_ID_CREDIT || '2009124574-AtGKWWRM';
 const LINE_CHANNEL_ID = import.meta.env.VITE_LINE_CHANNEL_ID || '';
 
 export function useLineLiff() {
@@ -41,13 +41,6 @@ export function useLineLiff() {
   onMounted(async () => {
     // Skip LIFF when running inside Telegram WebApp
     if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
-      return;
-    }
-
-    // Skip LIFF on localhost to avoid redirect to Line login during local development
-    const isLocalhost =
-      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    if (isLocalhost) {
       return;
     }
 

@@ -4,7 +4,7 @@ import { useLineLiff } from './useLineLiff';
 import { fetchSanctumToken, getAuthErrorMessage, type AuthRequest } from '@/api/authClient';
 
 /** Bot ID for the Telegram Mini App. Must match the bot that serves the web app. */
-const CREDIT_BOT_ID = import.meta.env.VITE_TELEGRAM_BOT_ID || '8471147380';
+const CREDIT_BOT_ID = import.meta.env.VITE_TELEGRAM_BOT_ID || '7785400153';
 
 export type Platform = 'telegram' | 'line' | null;
 
